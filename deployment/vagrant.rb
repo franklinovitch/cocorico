@@ -21,7 +21,8 @@ module Vagrant
           AutoConfigure::install_plugins([
             "vagrant-cachier",
             "vagrant-managed-servers",
-            "vagrant-triggers"
+            "vagrant-triggers",
+            "vagrant-hostmanager"
           ])
 
           inventory.each do |key, value|
@@ -141,12 +142,18 @@ module Vagrant
 
         self.provision_with_ansible config, name, params
 
-        config.vm.post_up_message = "Please add this line to your /etc/hosts:\n" +
-        "#{params[:hosts][0]} #{params[:vars][:hostname]}"
-
         if Vagrant.has_plugin?("vagrant-cachier")
           config.cache.scope = :box
         end
+
+        if Vagrant.has_plugin?("vagrant-hostmanager")
+          config.hostmanager.enabled = true
+          config.hostmanager.manage_host = true
+          config.hostmanager.manage_guest = true
+          config.hostmanager.ignore_private_ip = false
+          config.hostmanager.include_offline = true
+        end
+
       end
     end
 
